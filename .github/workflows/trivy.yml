@@ -12,35 +12,16 @@ on:
     # The branches below must be a subset of the branches above
     branches: [ "develop" ]
 
-jobs:
-  Trivy-Scan:
-    runs-on: ubuntu-latest
-
 permissions:
   contents: read
   security-events: write
 
+jobs:
+  Trivy-Scan:
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-
-#      - name: Build an image from Dockerfile
-#        run: |
-#          docker build -t docker.io/my-organization/my-app:${{ github.sha }} .
-#
-#      - name: Run Trivy vulnerability scanner in docker mode
-#        uses: aquasecurity/trivy-action@master
-#        with:
-#          image-ref: 'docker.io/my-organization/my-app:${{ github.sha }}'
-#          format: 'template'
-#          template: '@/contrib/sarif.tpl'
-#          output: 'trivy-results-docker.sarif'
-#          severity: 'CRITICAL'
-#
-#      - name: Upload Trivy scan results to GitHub Security tab
-#        uses: github/codeql-action/upload-sarif@v1
-#        with:
-#          sarif_file: 'trivy-results-docker.sarif'
 
       - name: Run Trivy vulnerability scanner in fs mode
         uses: anandg112/trivy-action@feat/add-skip-dirs-option
@@ -63,3 +44,4 @@ permissions:
         uses: github/codeql-action/upload-sarif@v1
         with:
           sarif_file: 'debug-trivy-results.sarif'
+
