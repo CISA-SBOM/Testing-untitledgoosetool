@@ -1,0 +1,47 @@
+name: Microsoft SBOM Scan
+
+on:
+  push:
+    branches:
+      - develop  # Specify the branch you want to trigger the workflow on
+
+jobs:
+  sbom_scan:
+    name: SBOM Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Build
+        working-directory: ./src/fake-web-api
+        run: dotnet build --no-restore -o "./out"
+
+      - name: Generate SBOM
+        working-directory: ./src/fake-web-api
+        run: |
+          curl -Lo $RUNNER_TEMP/sbom-tool https://github.com/microsoft/sbom-tool/releases/latest/download/sbom-tool-linux-x64
+          chmod +x $RUNNER_TEMP/sbom-tool
+          $RUNNER_TEMP/sbom-tool generate -b ./out -bc . -pn ${{ github.event.repository.name }} -pv ${{ github.run_number }} -nsb https://sbom.medium.com.au -V Verbose
+          ls ./out/_manifest/spdx_2.2/
+        shell: bash
+
+      - name: Upload SBOM artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: sbom-artifacts
+          path: ./src/fake-web-api/out/_manifest/spdx_2.2/*
+
+      - name: update to release asset
+        if: ${{ github.event.release != null }}
+        uses: echapmanFromBunnings/upload-release-assets@1.1
+        with:
+          releaseTag: ${{ github.event.release.tag_name }}
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          files: |
+            ./src/fake-web-api/out/_manifest/spdx_2.2/*
+
+      - name: Test
+        working-directory: ./src/fake-web-api
+        run: dotnet test --no-build --verbosity normal
