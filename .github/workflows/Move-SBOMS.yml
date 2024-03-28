@@ -52,19 +52,19 @@ jobs:
 
       - name: Move SPDX JSON to specified path
         run: |
-          if [ -f "spdx.json" ]; then
-            mv spdx.json cloned_repo/SBOM/
+          if [ -f "$GITHUB_WORKSPACE/spdx.json" ]; then
+            mv $GITHUB_WORKSPACE/spdx.json $GITHUB_WORKSPACE/cloned_repo/SBOM/
           else
             echo "SPDX JSON file not found."
             exit 1
           fi
 
       - name: Move CycloneDX JSON to specified path
-        run: mv cdx.json cloned_repo/SBOM/
+        run: mv cdx.json $GITHUB_WORKSPACE/cloned_repo/SBOM/
 
       - name: Commit and push changes
         run: |
-          cd cloned_repo
+          cd $GITHUB_WORKSPACE/cloned_repo
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions"
           git add .
