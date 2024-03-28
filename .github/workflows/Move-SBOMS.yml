@@ -1,0 +1,38 @@
+name: Move SBOM Scan
+
+on:
+  push:
+    branches: [ "develop" ]
+
+permissions:
+  contents: write
+  
+env:
+  OUTPUT_ARTIFACT_WORK_DIR: /tmp/output-artifact-work
+
+jobs:
+  Anchore-Build-Scan:
+    permissions:
+      contents: write # required to upload to the Dependency submission API
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v3
+
+      - name: spdx
+        uses: anchore/sbom-action@v0
+        with:
+          format: spdx-json
+          artifact-name: spdx.json
+
+      - name: cdx
+        uses: anchore/sbom-action@v0
+        with:
+          format: cyclonedx-json
+          artifact-name: cdx.json
+
+      # Move generated artifacts to the root directory
+      - name: Move SBOM Artifacts
+        run: |
+          mv ${{ env.OUTPUT_ARTIFACT_WORK_DIR }}/spdx.json .
+          mv ${{ env.OUTPUT_ARTIFACT_WORK_DIR }}/cdx.json .
