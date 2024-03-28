@@ -31,6 +31,8 @@ jobs:
         with:
           name: SPDX-Scan-Results
           path: ${{ steps.spdx.outputs.artifact_path }}
+        env:
+          OUTPUT_ARTIFACT_WORK_DIR: /tmp/output-artifact-work
 
       - name: Clone repo to move artifacts
         uses: actions/checkout@v2
