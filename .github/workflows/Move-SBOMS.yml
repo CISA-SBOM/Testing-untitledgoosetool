@@ -16,20 +16,6 @@ jobs:
       - name: Checkout the code
         uses: actions/checkout@v3
 
-      - name: Generate SPDX JSON
-        id: spdx
-        uses: anchore/sbom-action@v0
-        with:
-          format: spdx-json
-          artifact-name: spdx.json
-
-      - name: Generate CycloneDX JSON
-        id: cdx
-        uses: anchore/sbom-action@v0
-        with:
-          format: cyclonedx-json
-          artifact-name: cdx.json
-
       - name: Download SPDX JSON
         uses: actions/download-artifact@v2
         with:
