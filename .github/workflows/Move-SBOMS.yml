@@ -1,4 +1,4 @@
-name: MOVE Scan
+name: Move Scan
 
 on:
   push:
@@ -17,12 +17,14 @@ jobs:
         uses: actions/checkout@v3
 
       - name: spdx
+        id: spdx_scan
         uses: anchore/sbom-action@v0
         with:
           format: spdx-json
           artifact-name: spdx.json
 
       - name: cdx
+        id: cdx_scan
         uses: anchore/sbom-action@v0
         with:
           format: cyclonedx-json
@@ -31,10 +33,11 @@ jobs:
       - name: Move artifacts to SBOM folder
         run: |
           mkdir -p SBOM
-          mv spdx.json SBOM/
-          mv cdx.json SBOM/
+          if [ -f "spdx.json" ]; then mv spdx.json SBOM/; fi
+          if [ -f "cdx.json" ]; then mv cdx.json SBOM/; fi
 
       - name: Commit and push SBOM artifacts
+        if: steps.spdx_scan.outputs.artifact-generated == 'true' || steps.cdx_scan.outputs.artifact-generated == 'true'
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
