@@ -1,4 +1,4 @@
-name: MOVE Scan
+name: Move Scan
 
 on:
   workflow_dispatch: # Trigger manually
@@ -31,17 +31,16 @@ jobs:
           format: cyclonedx-json
           artifact-name: cdx.json
 
-      - name: Move artifacts to SBOM folder
+      - name: Move artifacts to repository root
         run: |
-          mkdir -p SBOM
-          if [ -f "spdx.json" ]; then mv spdx.json SBOM/; fi
-          if [ -f "cdx.json" ]; then mv cdx.json SBOM/; fi
+          if [ -f "spdx.json" ]; then mv spdx.json ./; fi
+          if [ -f "cdx.json" ]; then mv cdx.json ./; fi
 
       - name: Commit and push SBOM artifacts
         if: steps.spdx_scan.outputs.artifact-generated == 'true' || steps.cdx_scan.outputs.artifact-generated == 'true'
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add SBOM/
+          git add .
           git commit -m "Add SBOM artifacts"
           git push
