@@ -34,10 +34,10 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: SPDX-Scan-Results
-          path: ${{ steps.spdx.outputs.artifact-path }}
+          path: /tmp/sbom-action-iRYK5z/spdx.json
 
       - name: Upload CycloneDX JSON
         uses: actions/upload-artifact@v2
         with:
           name: CycloneDX-Scan-Results
-          path: ${{ steps.cdx.outputs.artifact-path }}
+          path: /tmp/sbom-action-HB3RgZ/cdx.json
