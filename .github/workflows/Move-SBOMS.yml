@@ -3,7 +3,7 @@ name: Syft SBOM Generation
 on:
   push:
     branches:
-      - main  # Adjust this according to your branch naming
+      - develop  # Adjust this according to your branch naming
 
 jobs:
   build:
