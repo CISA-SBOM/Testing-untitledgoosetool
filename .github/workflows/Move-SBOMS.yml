@@ -1,13 +1,15 @@
-name: MOVE Scan
+name: Move Scan
 
 on:
-  workflow_dispatch: # Trigger manually
   push:
     branches: [ "develop" ]
 
 permissions:
   contents: write
   
+env:
+  OUTPUT_ARTIFACT_WORK_DIR: /tmp/output-artifact-work
+
 jobs:
   Anchore-Build-Scan:
     permissions:
@@ -18,33 +20,47 @@ jobs:
         uses: actions/checkout@v3
 
       - name: spdx
-        id: spdx_scan
-        run: |
-          docker run --rm \
-            -v $(pwd):/workspace \
-            anchore/sbom-action:v0 \
-            --format spdx-json \
-            --output /workspace/spdx.json
+        uses: anchore/sbom-action@v0
+        with:
+          format: spdx-json
+          artifact-name: spdx.json
 
       - name: cdx
-        id: cdx_scan
-        run: |
-          docker run --rm \
-            -v $(pwd):/workspace \
-            anchore/sbom-action:v0 \
-            --format cyclonedx-json \
-            --output /workspace/cdx.json
+        uses: anchore/sbom-action@v0
+        with:
+          format: cyclonedx-json
+          artifact-name: cdx.json
 
-      - name: Move artifacts to repository root
-        run: |
-          if [ -f "spdx.json" ]; then mv spdx.json ./; fi
-          if [ -f "cdx.json" ]; then mv cdx.json ./; fi
+      - name: Upload SPDX JSON
+        uses: actions/upload-artifact@v2
+        with:
+          name: SPDX-Scan-Results
+          path: spdx.json
 
-      - name: Commit and push SBOM artifacts
-        if: steps.spdx_scan.outputs.run-result == 'success' || steps.cdx_scan.outputs.run-result == 'success'
+      - name: Upload CycloneDX JSON
+        uses: actions/upload-artifact@v2
+        with:
+          name: CycloneDX-Scan-Results
+          path: cdx.json
+
+      - name: Clone repo to move artifacts
+        uses: actions/checkout@v2
+        with:
+          repository: CISA-SBOM/Testing-untitledgoosetool
+          ref: develop
+          path: cloned_repo
+
+      - name: Move SPDX JSON to specified path
+        run: mv spdx.json cloned_repo/SBOM/
+
+      - name: Move CycloneDX JSON to specified path
+        run: mv cdx.json cloned_repo/SBOM/
+
+      - name: Commit and push changes
         run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
+          cd cloned_repo
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
           git add .
-          git commit -m "Add SBOM artifacts"
+          git commit -m "Upload SPDX and CycloneDX JSON files"
           git push
