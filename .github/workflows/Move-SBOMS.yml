@@ -1,4 +1,4 @@
-name: SBOM Scan
+name: MOVE Scan
 
 on:
   push:
@@ -28,14 +28,16 @@ jobs:
           format: cyclonedx-json
           artifact-name: cdx.json
 
-      # Move generated artifacts to the root directory
-      - name: Move SBOM Artifacts
+      - name: Move artifacts to SBOM folder
         run: |
-          mv spdx.json $GITHUB_WORKSPACE
-          mv cdx.json $GITHUB_WORKSPACE
+          mkdir -p SBOM
+          mv spdx.json SBOM/
+          mv cdx.json SBOM/
 
-      # Commit and push artifacts to the repository
-      - name: Commit and Push SBOM Artifacts
-        uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          commit_message: Add SBOM artifacts
+      - name: Commit and push SBOM artifacts
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add SBOM/
+          git commit -m "Add SBOM artifacts"
+          git push
