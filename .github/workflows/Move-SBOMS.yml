@@ -51,7 +51,13 @@ jobs:
           path: cloned_repo
 
       - name: Move SPDX JSON to specified path
-        run: mv spdx.json cloned_repo/SBOM/
+        run: |
+          if [ -f "spdx.json" ]; then
+            mv spdx.json cloned_repo/SBOM/
+          else
+            echo "SPDX JSON file not found."
+            exit 1
+          fi
 
       - name: Move CycloneDX JSON to specified path
         run: mv cdx.json cloned_repo/SBOM/
