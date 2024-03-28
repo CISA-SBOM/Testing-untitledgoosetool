@@ -7,9 +7,6 @@ on:
 permissions:
   contents: write
 
-env:
-  OUTPUT_ARTIFACT_WORK_DIR: /tmp/output-artifact-work
-
 jobs:
   Anchore-Build-Scan:
     permissions:
@@ -26,32 +23,21 @@ jobs:
           format: spdx-json
           artifact-name: spdx.json
 
+      - name: Generate CycloneDX JSON
+        id: cdx
+        uses: anchore/sbom-action@v0
+        with:
+          format: cyclonedx-json
+          artifact-name: cdx.json
+
       - name: Upload SPDX JSON
         uses: actions/upload-artifact@v2
         with:
           name: SPDX-Scan-Results
           path: ${{ steps.spdx.outputs.artifact_path }}
-        env:
-          OUTPUT_ARTIFACT_WORK_DIR: /tmp/output-artifact-work
 
-      - name: Clone repo to move artifacts
-        uses: actions/checkout@v2
+      - name: Upload CycloneDX JSON
+        uses: actions/upload-artifact@v2
         with:
-          repository: CISA-SBOM/Testing-untitledgoosetool
-          ref: develop
-          path: cloned_repo
-
-      - name: Move SPDX JSON to specified path
-        run: mv $GITHUB_WORKSPACE/${{ steps.spdx.outputs.artifact_path }} $GITHUB_WORKSPACE/cloned_repo/SBOM/
-
-      - name: Move CycloneDX JSON to specified path
-        run: mv cdx.json $GITHUB_WORKSPACE/cloned_repo/SBOM/
-
-      - name: Commit and push changes
-        run: |
-          cd $GITHUB_WORKSPACE/cloned_repo
-          git config --global user.email "actions@github.com"
-          git config --global user.name "GitHub Actions"
-          git add .
-          git commit -m "Upload SPDX and CycloneDX JSON files"
-          git push
+          name: CycloneDX-Scan-Results
+          path: ${{ steps.cdx.outputs.artifact_path }}
