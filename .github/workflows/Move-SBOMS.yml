@@ -19,17 +19,21 @@ jobs:
 
       - name: spdx
         id: spdx_scan
-        uses: anchore/sbom-action@v1
-        with:
-          format: spdx-json
-          artifact-name: spdx.json
+        run: |
+          docker run --rm \
+            -v $(pwd):/workspace \
+            anchore/sbom-action:v0 \
+            --format spdx-json \
+            --output /workspace/spdx.json
 
       - name: cdx
         id: cdx_scan
-        uses: anchore/sbom-action@v1
-        with:
-          format: cyclonedx-json
-          artifact-name: cdx.json
+        run: |
+          docker run --rm \
+            -v $(pwd):/workspace \
+            anchore/sbom-action:v0 \
+            --format cyclonedx-json \
+            --output /workspace/cdx.json
 
       - name: Move artifacts to repository root
         run: |
@@ -37,7 +41,7 @@ jobs:
           if [ -f "cdx.json" ]; then mv cdx.json ./; fi
 
       - name: Commit and push SBOM artifacts
-        if: steps.spdx_scan.outputs.artifact-generated == 'true' || steps.cdx_scan.outputs.artifact-generated == 'true'
+        if: steps.spdx_scan.outputs.run-result == 'success' || steps.cdx_scan.outputs.run-result == 'success'
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
