@@ -19,29 +19,17 @@ jobs:
       - name: Checkout the code
         uses: actions/checkout@v3
 
-      - name: spdx
-        uses: anchore/sbom-action@v0
-        with:
-          format: spdx-json
-          artifact-name: spdx.json
-
-      - name: cdx
-        uses: anchore/sbom-action@v0
-        with:
-          format: cyclonedx-json
-          artifact-name: cdx.json
+      - name: Generate SPDX JSON
+        id: spdx
+        run: |
+          anchore/sbom-action@v0
+          echo "::set-output name=spdx_file::spdx.json"
 
       - name: Upload SPDX JSON
         uses: actions/upload-artifact@v2
         with:
           name: SPDX-Scan-Results
-          path: spdx.json
-
-      - name: Upload CycloneDX JSON
-        uses: actions/upload-artifact@v2
-        with:
-          name: CycloneDX-Scan-Results
-          path: cdx.json
+          path: ${{ steps.spdx.outputs.spdx_file }}
 
       - name: Clone repo to move artifacts
         uses: actions/checkout@v2
@@ -52,8 +40,8 @@ jobs:
 
       - name: Move SPDX JSON to specified path
         run: |
-          if [ -f "$GITHUB_WORKSPACE/spdx.json" ]; then
-            mv $GITHUB_WORKSPACE/spdx.json $GITHUB_WORKSPACE/cloned_repo/SBOM/
+          if [ -f "$GITHUB_WORKSPACE/${{ steps.spdx.outputs.spdx_file }}" ]; then
+            mv "$GITHUB_WORKSPACE/${{ steps.spdx.outputs.spdx_file }}" "$GITHUB_WORKSPACE/cloned_repo/SBOM/"
           else
             echo "SPDX JSON file not found."
             exit 1
