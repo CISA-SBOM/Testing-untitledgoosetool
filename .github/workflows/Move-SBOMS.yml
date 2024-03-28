@@ -1,6 +1,7 @@
-name: Move Scan
+name: MOVE Scan
 
 on:
+  workflow_dispatch: # Trigger manually
   push:
     branches: [ "develop" ]
 
