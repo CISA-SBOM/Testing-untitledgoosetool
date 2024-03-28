@@ -1,4 +1,4 @@
-name: Move SBOM Scan
+name: SBOM Scan
 
 on:
   push:
@@ -7,9 +7,6 @@ on:
 permissions:
   contents: write
   
-env:
-  OUTPUT_ARTIFACT_WORK_DIR: /tmp/output-artifact-work
-
 jobs:
   Anchore-Build-Scan:
     permissions:
@@ -34,5 +31,12 @@ jobs:
       # Move generated artifacts to the root directory
       - name: Move SBOM Artifacts
         run: |
-          mv ${{ env.OUTPUT_ARTIFACT_WORK_DIR }}/spdx.json .
-          mv ${{ env.OUTPUT_ARTIFACT_WORK_DIR }}/cdx.json .
+          mv spdx.json $GITHUB_WORKSPACE
+          mv cdx.json $GITHUB_WORKSPACE
+        working-directory: $GITHUB_WORKSPACE
+
+      # Commit and push artifacts to the repository
+      - name: Commit and Push SBOM Artifacts
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Add SBOM artifacts
