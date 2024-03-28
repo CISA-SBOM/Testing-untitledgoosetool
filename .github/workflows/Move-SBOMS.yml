@@ -19,14 +19,14 @@ jobs:
 
       - name: spdx
         id: spdx_scan
-        uses: anchore/sbom-action@v0
+        uses: docker://anchore/sbom-action:v0
         with:
           format: spdx-json
           artifact-name: spdx.json
 
       - name: cdx
         id: cdx_scan
-        uses: anchore/sbom-action@v0
+        uses: docker://anchore/sbom-action:v0
         with:
           format: cyclonedx-json
           artifact-name: cdx.json
