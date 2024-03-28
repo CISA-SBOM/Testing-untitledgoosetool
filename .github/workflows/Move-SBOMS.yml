@@ -6,7 +6,7 @@ on:
 
 permissions:
   contents: write
-  
+
 env:
   OUTPUT_ARTIFACT_WORK_DIR: /tmp/output-artifact-work
 
@@ -40,13 +40,7 @@ jobs:
           path: cloned_repo
 
       - name: Move SPDX JSON to specified path
-        run: |
-          if [ -f "$GITHUB_WORKSPACE/${{ steps.spdx.outputs.artifact_path }}" ]; then
-            mv "$GITHUB_WORKSPACE/${{ steps.spdx.outputs.artifact_path }}" "$GITHUB_WORKSPACE/cloned_repo/SBOM/"
-          else
-            echo "SPDX JSON file not found."
-            exit 1
-          fi
+        run: mv $GITHUB_WORKSPACE/${{ steps.spdx.outputs.artifact_path }} $GITHUB_WORKSPACE/cloned_repo/SBOM/
 
       - name: Move CycloneDX JSON to specified path
         run: mv cdx.json $GITHUB_WORKSPACE/cloned_repo/SBOM/
